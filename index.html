@@ -338,7 +338,7 @@
                 
               
 
-              <time title="Created: 2018-06-25 20:56:04 / Modified: 20:56:53" itemprop="dateCreated datePublished" datetime="2018-06-25T20:56:04+08:00">2018-06-25</time>
+              <time title="Created: 2018-06-25 20:56:04 / Modified: 21:01:11" itemprop="dateCreated datePublished" datetime="2018-06-25T20:56:04+08:00">2018-06-25</time>
             
 
             
@@ -433,11 +433,10 @@
 <li>数据操纵 （<code>SQL DML</code>）数据操纵分成数据查询和数据更新两类。数据更新又分为插入、删除和修改三种操作。也就是我们所说的增删改查操作。</li>
 <li>数据控制 （<code>DCL</code>）包括基本表的授权，完整性描述，事务控制等内容。</li>
 </ul>
-<p>###常见的数据库及应用场景<br>最常见的数据库模型主要是两种，即关系型数据库和非关系型数据库。</p>
+<h3 id="常见的数据库及应用场景"><a href="#常见的数据库及应用场景" class="headerlink" title="常见的数据库及应用场景"></a>常见的数据库及应用场景</h3><p>最常见的数据库模型主要是两种，即关系型数据库和非关系型数据库。</p>
 <h4 id="关系型数据库"><a href="#关系型数据库" class="headerlink" title="关系型数据库"></a>关系型数据库</h4><p>关系型数据库模型是把复杂的数据结构归结为简单的二元关系（即二维表格形式）。在关系型数据库中，对数据的操作几乎全部建立在一个或多个关系表格上，通过对这些关联的表格分类、合并、连接或选取等运算来实现数据库的管理。<br>在服务端上有<code>Oracle</code>和<code>MySQL</code>。<br>在移动端里最常用的SQlite 就是关系型数据库。本文会对SQLite进行详细的解释。</p>
 <h4 id="非关系型数据库"><a href="#非关系型数据库" class="headerlink" title="非关系型数据库"></a>非关系型数据库</h4><p>非关系型数据库在超大规模和高并发的SNS类型的web2.0纯动态网站中有着非常好的性能。<br><code>NoSQL(NoSQL = Not Only SQL )</code>，意即“不仅仅是SQL”，  泛指非关系型数据库。<br>非关系型数据库 又分为键值存储数据库（key-value）(比如Redis数据库)、列存储（Column-oriented）数据库、面向文档（Document-Oriented）数据库、图形数据库。服务端特别互联网时代，对非关系行数据库有非常广泛的应用。 在移动端有代表性的是Realm。</p>
-<p>###Sqlite</p>
-<p><code>SQLite</code>，是一款轻型的数据库，是遵守<code>ACID</code>的关系型数据库管理系统。它的设计目标用于嵌入式系统，占用资源少，只需要几百K就够了，并且是跨平台的。目前主流的移动端操作系统Android和iOS的设备内置的都是SQLite数据库。</p>
+<h3 id="Sqlite"><a href="#Sqlite" class="headerlink" title="Sqlite"></a>Sqlite</h3><p><code>SQLite</code>，是一款轻型的数据库，是遵守<code>ACID</code>的关系型数据库管理系统。它的设计目标用于嵌入式系统，占用资源少，只需要几百K就够了，并且是跨平台的。目前主流的移动端操作系统Android和iOS的设备内置的都是SQLite数据库。</p>
 <blockquote>
 <p>ACID，是指数据库管理系统（<code>DBMS</code>）在写入或更新资料的过程中，为保证事务（<code>transaction</code>）是正确可靠的，所必须具备的四个特性：原子性（<code>atomicity</code>，或称不可分割性）、一致性（<code>consistency</code>）、隔离性（<code>isolation</code>，又称独立性）、持久性（<code>durability</code>）。 </p>
 </blockquote>
@@ -446,7 +445,7 @@
 <p>比如一个对<code>Employee</code>表的数据操作流程如下：</p>
 <p> 流程大致如下：  1. SQL语句 -&gt; 2.  触发磁盘I/O -&gt;3.磁盘返回一个表对应的<code>Index</code>表的一页Page，包含若干条记录 -&gt; 4. 在上述记录当中找到目标记录，如果没有找到满足条件的记录，则循环第2步骤和第3步骤 直到找到满足条件的记录-&gt; 5.根据<code>Index</code>表的记录里存放的<code>position</code>信息找到原始表记录的位置 -&gt;6.对原始表当中的目标记录进行操作，完成SQL操作。<br> 这里出现了几个名词：<code>Index</code>表和<code>原始表</code>，接下来会进行解释。 </p>
 <h4 id="磁盘I-O瓶颈"><a href="#磁盘I-O瓶颈" class="headerlink" title="磁盘I/O瓶颈"></a>磁盘I/O瓶颈</h4><p>我们知道数据库文件其实是放在磁盘上的。而对磁盘的操作要比内存的操作要耗时的多。而一般情况下，一次查询往往无法通过一次I/O 操作完成。所以如何减少磁盘I/O 的次数成为我们优化<code>SQlite</code>性能的关键。 </p>
-<p>####磁盘读取方式<br>磁盘读取方式是以<code>Page</code>为单位。页（<code>page</code>）是计算机存储时，所使用的基础逻辑单位。内存和磁盘中的数据存储和交互都是以页为单位的。即使内存只需要1个字节的数据，从磁盘读取的时候也是拿到一个或多个<code>Page</code>，这是系统级别的一种预先缓存策略。 </p>
+<h4 id="磁盘读取方式"><a href="#磁盘读取方式" class="headerlink" title="磁盘读取方式"></a>磁盘读取方式</h4><p>磁盘读取方式是以<code>Page</code>为单位。页（<code>page</code>）是计算机存储时，所使用的基础逻辑单位。内存和磁盘中的数据存储和交互都是以页为单位的。即使内存只需要1个字节的数据，从磁盘读取的时候也是拿到一个或多个<code>Page</code>，这是系统级别的一种预先缓存策略。 </p>
 <h4 id="Index表"><a href="#Index表" class="headerlink" title="Index表"></a>Index表</h4><p>了解了磁盘I/O非常消耗性能后，我们可以看到如果一个Page里包含的记录比较多，那么SQL每次I/O被命中的概率就更大。 而如果要查询的是一个完整的表，比如一个表里有30个字段，一个字段占用100个字节，那么一个记录占用大概是 30 *100 = 3000 个这字节。假设一页 大小为 4KB，那么一页只存在一个记录。而假设我们使用一个表和原来的表做映射，但是只保留索引字段，比如说只保留key字段，和原始表对应的position字段，那么一页Page就可以装下100多个记录了。 这个和原始表对应的表就叫做<code>索引表</code>。 </p>
 <h4 id="B树"><a href="#B树" class="headerlink" title="B树"></a>B树</h4><p>虽然二叉树可以实现log(n)的查找，和插入，但是由于二叉树的每个节点其实对应磁盘的一个<code>Page</code>。所以为了减少磁盘I/O 的次数，需要尽可能减少树的高度。而二叉树类似于一个高瘦的树，我们需要找到一个矮胖的树。 而B树正好符合这个性质。 <code>B树</code>是一个<code>多路查找平衡树</code>，他的每个节点最多包含k个孩子。 k被称为B树的<code>阶</code>。k的大小取决于磁盘页的大小。 </p>
 <p><code>SQLite索引表</code>和原始表都是B树形式组织的。<br>也就说如果不建立<code>Index</code>表，原始表的每条记录的大小决定了<code>B树</code>的阶数。 阶数越大，B树越矮胖。<br>也就是要尽量减少原始表和<code>Index</code>表的大小。 尽量少用<code>string</code>类型，而用数值类型的字段。因为数值类型的字段占的字节少。</p>
@@ -499,8 +498,7 @@
 <p>MOC 可以设置<code>parentContext</code> ,一个<code>parentContext</code>可以拥有多个<code>childContext</code>，在<code>childContext</code>执行的<code>Save</code>操作，会将操作<code>push</code>到<code>parentContext</code>中，由<code>parentContext</code>来执行真正的<code>save</code>操作。而<code>childContext</code>的所有改变会被<code>parentContontext</code>知晓。 这样解决了手动同步的问题。 </p>
 <p>三层模型可以让我们在<code>MainContext</code>里执行UI相关的操作，而保存操作会在子线程 <code>Context</code>中，子线程是后台线程，当执行save的时候，会把状态保存到<code>MainContext</code> 中，<code>MainContext</code> 再次<code>save</code> 的时候，会把状态保存到最上层的唯一的私有<code>context</code>中。当<code>最上层的context</code>执行了save，才会真正触发执行把数据保存到数据库中的操作。 由于最上层的操作，是在子线程进行的，所以不会影响UI。<br>这里需要注意的是最下面的子线程 <code>Context</code>可以有多个。并且应用原则应该是用完即扔，不用保存这个<code>Context</code>。这样不会导致<code>Context</code>混乱的问题。 子Context之间不用进行通讯，意义不大，还会惹出一堆问题。我们的<code>MainContext</code>全程只有一个，用来进行UI相关的操作。并且最上层的私有context也是唯一一个。这就保证了我们只有一个数据库连接。<br>这样以后，其实是人为的保证了最上层只有一个<code>Context</code> 在和数据库打交到。 而这个<code>Context</code>又是在单个线程下的。所以能够保证对SQLite的操作是能满足多线程模式的要求的。<br>然而也可以看出，这样的操作，并没有发挥出多线程模式的优势来。有点类似于串行模式。<br>但是这样能够保证线程安全，并且不会阻塞主线程。</p>
 <h2 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h2><p>iOS端的存储方案有很多。到底选择哪种存储方案，还是要依赖于当时的业务场景出发。本文大体介绍了各种存储方式的原理，进而来探讨各个方案优劣点，及使用场景。 并没有对各个方案的实现细节有太多的描述。文件存储方案实现简单，在较简单的场景下非常有用。 数据库存储适合比较复杂的业务场景。当然坑也非常多，也有很多技术难点，在接下的文章中我们会对<code>FMDB</code>，<code>CoreData</code>进行详细的探讨。</p>
-<p>##参考链接</p>
-<ul>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><ul>
 <li><p><a href="http://www.jianshu.com/p/cf76e2e81230" target="_blank" rel="noopener">iOS进阶——SQLite数据库</a></p>
 </li>
 <li><p><a href="https://www.cnblogs.com/stephen-liu74/archive/2012/03/02/2328753.html" target="_blank" rel="noopener">SQLite学习手册(锁和并发控制)</a></p>
