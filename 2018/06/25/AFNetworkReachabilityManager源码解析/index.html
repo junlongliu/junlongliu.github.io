@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.3.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.3.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.3.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.3.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="AFNetworking - AFNetworkReachabilityManager  网路状态监控在很多业务场景下，需要判断网络的状态。 苹果本身给我们提供了系统API : SCNetworkReachabilityRef。但是使用起来比较繁琐，有开源的项目对它进行了封装。 比如AFNetworkReachabilityManager 、 Reachability等。 但是他们的原理都是相似">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AFNetworkReachabilityManager源码解析">
+<meta property="og:url" content="http://yoursite.com/2018/06/25/AFNetworkReachabilityManager源码解析/index.html">
+<meta property="og:site_name" content="junlong的博客">
+<meta property="og:description" content="AFNetworking - AFNetworkReachabilityManager  网路状态监控在很多业务场景下，需要判断网络的状态。 苹果本身给我们提供了系统API : SCNetworkReachabilityRef。但是使用起来比较繁琐，有开源的项目对它进行了封装。 比如AFNetworkReachabilityManager 、 Reachability等。 但是他们的原理都是相似">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://imageliujunlong.test.upcdn.net/2018/07/02/连接.jpg">
+<meta property="og:image" content="http://imageliujunlong.test.upcdn.net/2018/07/02/Socket连接.png">
+<meta property="og:updated_time" content="2018-07-02T07:24:19.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="AFNetworkReachabilityManager源码解析">
+<meta name="twitter:description" content="AFNetworking - AFNetworkReachabilityManager  网路状态监控在很多业务场景下，需要判断网络的状态。 苹果本身给我们提供了系统API : SCNetworkReachabilityRef。但是使用起来比较繁琐，有开源的项目对它进行了封装。 比如AFNetworkReachabilityManager 、 Reachability等。 但是他们的原理都是相似">
+<meta name="twitter:image" content="http://imageliujunlong.test.upcdn.net/2018/07/02/连接.jpg">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/06/25/AFNetworkReachabilityManager源码解析/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>AFNetworkReachabilityManager源码解析 | junlong的博客</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">junlong的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">热爱技术，热爱生活</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />Home</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />Archives</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />Categories</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/06/25/AFNetworkReachabilityManager源码解析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="liujunlong">
+      <meta itemprop="description" content="记录点点滴滴的感悟, iOS ,技术 刘俊龙， liujunlong ,龙猫，longmao, baidu">
+      <meta itemprop="image" content="/images/avatar1.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="junlong的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">AFNetworkReachabilityManager源码解析
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2018-06-25 21:20:42" itemprop="dateCreated datePublished" datetime="2018-06-25T21:20:42+08:00">2018-06-25</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-07-02 15:24:19" itemprop="dateModified" datetime="2018-07-02T15:24:19+08:00">2018-07-02</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><img src="http://imageliujunlong.test.upcdn.net/2018/07/02/连接.jpg" alt="连接"></p>
+<h1 id="AFNetworking-AFNetworkReachabilityManager-网路状态监控"><a href="#AFNetworking-AFNetworkReachabilityManager-网路状态监控" class="headerlink" title="AFNetworking - AFNetworkReachabilityManager  网路状态监控"></a>AFNetworking - AFNetworkReachabilityManager  网路状态监控</h1><p>在很多业务场景下，需要判断网络的状态。 苹果本身给我们提供了系统API : <code>SCNetworkReachabilityRef</code>。但是使用起来比较繁琐，有开源的项目对它进行了封装。 比如<code>AFNetworkReachabilityManager</code> 、 <code>Reachability</code>等。 但是他们的原理都是相似的。 首先我们来看一下网络监控的原理。 </p>
+<h2 id="网络状态监控原理"><a href="#网络状态监控原理" class="headerlink" title="网络状态监控原理"></a>网络状态监控原理</h2><p>其实原来还是比较简单的 ： 判断一个网络的状态，可以通过发送socket连接，通过查看得到的响应状态来判断。 所以首先要有 <code>SCNetworkReachabilityRef</code> ，这个指明了<code>socket</code>要连接的类型，是<code>IPV6</code> 还是<code>IPV4</code> ，端口号，要连接的IP地址等。 然后通过苹果内部实现网络连接会返回<code>SCNetworkReachabilityFlags</code> 来标明网络状态。这样便实现了从而来进行网络状态的监控。 </p>
+<p><img src="http://imageliujunlong.test.upcdn.net/2018/07/02/Socket连接.png" alt="Socket连接"></p>
+<h2 id="网络状态监控实现"><a href="#网络状态监控实现" class="headerlink" title="网络状态监控实现"></a>网络状态监控实现</h2><p>我们从使用角度上来分析网络状态监控实现 的实现细节。 可以分为两步： </p>
+<ul>
+<li>初始化 AFNetworkReachabilityManager </li>
+<li>调用 startMonitoring 方法开始对网络状态进行监控 </li>
+</ul>
+<h3 id="AFNetworkReachabilityManager-的初始化"><a href="#AFNetworkReachabilityManager-的初始化" class="headerlink" title="AFNetworkReachabilityManager 的初始化"></a>AFNetworkReachabilityManager 的初始化</h3><p>AFNetworkReachabilityManager 初始化的除了创建单例类，剩下的主要目的是要创建SCNetworkReachabilityRef 。所以创建SCNetworkReachabilityRef的三种方式也就是初始化AFNetworkReachabilityManager的三种方式。</p>
+<blockquote>
+<p>socket 描述符<br>socket 主要用于运行在不同服务器上的进程之间通信，也可以用于在同一服务器上的进程之间通信。<br>socket 描述符则是 socket 的唯一标识，其本质是一种特殊的文件描述符。</p>
+</blockquote>
+<ul>
+<li>给定socket描述符来创建<br>这时sockaddr 是给定的，则可以通过下面的方法来创建SCNetworkReachabilityRef </li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">SCNetworkReachabilityRef reachability = </span><br><span class="line">SCNetworkReachabilityCreateWithAddress(kCFAllocatorDefault, (const struct sockaddr *)address);</span><br><span class="line">``` </span><br><span class="line"></span><br><span class="line">* 给定域名来进行创建 </span><br><span class="line">给定domain，也就是域名字符串。来创建SCNetworkReachabilityRef。 </span><br><span class="line"></span><br><span class="line">``` </span><br><span class="line"> SCNetworkReachabilityRef reachability = </span><br><span class="line"> SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, [domain UTF8String]);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>没有给定socket描述符，则创建默认的 sockaddr_in6</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">struct sockaddr_in6 address;</span><br><span class="line">bzero(&amp;address, sizeof(address));</span><br><span class="line">address.sin6_len = sizeof(address);</span><br><span class="line">address.sin6_family = AF_INET6;</span><br></pre></td></tr></table></figure>
+<p>这个sockaddr_in6会被被初始化为0 。指定地址类型是<code>IPV4</code> ,还是<code>IPV6</code> 。<br>在 <code>IPV4</code> 中， 没有指定<code>sin6_addr</code> 则会初始化为<code>0.0.0.0</code>   在路由中，<code>0.0.0.0</code>表示的是默认路由，即当路由表中没有找到完全匹配的路由的时候所对应的路由。  IPV6 类似。 </p>
+<h3 id="调用-startMonitoring-方法开始对网络状态进行监控"><a href="#调用-startMonitoring-方法开始对网络状态进行监控" class="headerlink" title="调用 startMonitoring 方法开始对网络状态进行监控"></a>调用 startMonitoring 方法开始对网络状态进行监控</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">SCNetworkReachabilityContext context = &#123;0, (__bridge void *)callback, AFNetworkReachabilityRetainCallback, AFNetworkReachabilityReleaseCallback, NULL&#125;;</span><br><span class="line">  SCNetworkReachabilitySetCallback(self.networkReachability, AFNetworkReachabilityCallback, &amp;context);</span><br><span class="line">  SCNetworkReachabilityScheduleWithRunLoop(self.networkReachability, CFRunLoopGetMain(), kCFRunLoopCommonModes);</span><br><span class="line"></span><br><span class="line">  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0),^&#123;</span><br><span class="line">      SCNetworkReachabilityFlags flags;</span><br><span class="line">      if (SCNetworkReachabilityGetFlags(self.networkReachability, &amp;flags)) &#123;</span><br><span class="line">          AFPostReachabilityStatusChange(flags, callback);</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;);</span><br></pre></td></tr></table></figure>
+<p>首先指定SCNetworkReachabilityContext 上下文。 其次设置网络状态回调SCNetworkReachabilitySetCallback。 然后把SCNetworkReachabilityRef 设置到main runloop 下，并且指定mode 为 kCFRunLoopCommonModes 。 最后通过SCNetworkReachabilityGetFlags来获取网络状态。 如果网络状态变化，则调用AFPostReachabilityStatusChange 执行回调，抛出通知。 </p>
+<p>下面我们依次看一下这些函数具体是什么含义，如何使用。 </p>
+<h4 id="SCNetworkReachabilityContext-上下文"><a href="#SCNetworkReachabilityContext-上下文" class="headerlink" title="SCNetworkReachabilityContext 上下文"></a>SCNetworkReachabilityContext 上下文</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">typedef struct &#123;</span><br><span class="line">	CFIndex		version; //当前结构体的版本号</span><br><span class="line">	void *		__nullable info; //用户指定用于回到的block，</span><br><span class="line">	const void	* __nonnull (* __nullable retain)(const void *info); //对上面的info block进行 retain </span><br><span class="line">	void		(* __nullable release)(const void *info);// 对上面的info block进行 release  </span><br><span class="line">	CFStringRef	__nonnull (* __nullable copyDescription)(const void *info); //对 info block 的字符说明</span><br><span class="line">&#125; SCNetworkReachabilityContext;</span><br></pre></td></tr></table></figure>
+<p>可以看出SCNetworkReachabilityContext 主要声明了 SCNetworkReachability的回调。也就是网络发生变化时的回调。当网络可达性发生变化时，会执行上面的info回调。 </p>
+<p>来看一下AFNetworkReachabilityManager 是如何使用的 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">static const void * AFNetworkReachabilityRetainCallback(const void *info) &#123;</span><br><span class="line">    return Block_copy(info);</span><br><span class="line">&#125;</span><br><span class="line">static void AFNetworkReachabilityReleaseCallback(const void *info) &#123;</span><br><span class="line">    if (info) &#123;</span><br><span class="line">        Block_release(info);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">AFNetworkReachabilityStatusBlock callback = ^(AFNetworkReachabilityStatus status) &#123;</span><br><span class="line">        __strong __typeof(weakSelf)strongSelf = weakSelf;</span><br><span class="line"></span><br><span class="line">        strongSelf.networkReachabilityStatus = status;</span><br><span class="line">        if (strongSelf.networkReachabilityStatusBlock) &#123;</span><br><span class="line">            strongSelf.networkReachabilityStatusBlock(status);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;;</span><br><span class="line">SCNetworkReachabilityContext context = &#123;0, (__bridge void *)callback, AFNetworkReachabilityRetainCallback, AFNetworkReachabilityReleaseCallback, NULL&#125;;</span><br></pre></td></tr></table></figure>
+<p><code>callback</code> 用来把状态信息传给<code>strongSelf.networkReachabilityStatusBlock</code> 。 而<code>AFNetworkReachabilityRetainCallback</code> 则是对<code>info</code> 这个<code>block</code>进行<code>copy</code>操作。<br><code>AFNetworkReachabilityReleaseCallback</code>对 <code>info</code> 这个<code>block</code>进行<code>release</code>操作。描述信息设置为了<code>NULL</code> 。这样创建了一个context，info信息用来回调<code>strongSelf.networkReachabilityStatusBlock</code>。  当info执行的回调的时候，会调用<code>strongSelf.networkReachabilityStatusBlock</code>。<br>而<code>networkReachabilityStatusBlock</code> 就是我们外部观测网络状态变化的block。 我们可以在这个block 里执行一些网络状态变化后需要执行的操作。 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typedef void (^AFNetworkReachabilityStatusBlock)(AFNetworkReachabilityStatus status);</span><br></pre></td></tr></table></figure>
+<h4 id="SCNetworkReachabilitySetCallback"><a href="#SCNetworkReachabilitySetCallback" class="headerlink" title="SCNetworkReachabilitySetCallback"></a>SCNetworkReachabilitySetCallback</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Boolean</span><br><span class="line">SCNetworkReachabilitySetCallback		(</span><br><span class="line">						SCNetworkReachabilityRef			target, </span><br><span class="line">						SCNetworkReachabilityCallBack	__nullable	callout,</span><br><span class="line">						SCNetworkReachabilityContext	* __nullable	context</span><br><span class="line">						)</span><br></pre></td></tr></table></figure>
+<p>这个方法的第二个参数SCNetworkReachabilityCallBack ，用来指定网络状态发生变化后这个callback会执行。 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">typedef void (*SCNetworkReachabilityCallBack)	(</span><br><span class="line">						SCNetworkReachabilityRef			target,</span><br><span class="line">						SCNetworkReachabilityFlags			flags,</span><br><span class="line">						void			     *	__nullable	info</span><br><span class="line">						);</span><br></pre></td></tr></table></figure>
+<p>其中的info同<code>SCNetworkReachabilityContext</code>的info。 指明当网络发生变化时执行的info。 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">SCNetworkReachabilitySetCallback(self.networkReachability, AFNetworkReachabilityCallback, &amp;context);</span><br><span class="line"></span><br><span class="line">static void AFNetworkReachabilityCallback(SCNetworkReachabilityRef __unused target, SCNetworkReachabilityFlags flags, void *info) &#123;</span><br><span class="line">    AFPostReachabilityStatusChange(flags, (__bridge AFNetworkReachabilityStatusBlock)info);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">```  </span><br><span class="line">AFNetworkReachabilityManager 声明SCNetworkReachabilityCallBack 为 AFNetworkReachabilityCallback 。 </span><br><span class="line"></span><br><span class="line">AFNetworkReachabilityCallback 会调用AFPostReachabilityStatusChange 。在AFPostReachabilityStatusChange 函数里，会调用AFNetworkReachabilityStatusForFlags 函数 将得到的SCNetworkReachabilityFlags 转换为AFNetworkReachabilityStatus ，然后执行状态变化回调，并且为发出通知。</span><br></pre></td></tr></table></figure>
+<p>static void AFPostReachabilityStatusChange(SCNetworkReachabilityFlags flags, AFNetworkReachabilityStatusBlock block) {<br>    AFNetworkReachabilityStatus status = AFNetworkReachabilityStatusForFlags(flags);<br>    dispatch_async(dispatch_get_main_queue(), ^{<br>        if (block) {<br>            block(status);<br>        }<br>        NSNotificationCenter <em>notificationCenter = [NSNotificationCenter defaultCenter];<br>        NSDictionary </em>userInfo = @{ AFNetworkingReachabilityNotificationStatusItem: @(status) };<br>        [notificationCenter postNotificationName:AFNetworkingReachabilityDidChangeNotification object:nil userInfo:userInfo];<br>    });<br>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">#### AFStringFromNetworkReachabilityStatus 状态的转换</span><br><span class="line"></span><br><span class="line">AFNetworkReachabilityStatusForFlags 为网络状态函数。该函数主要是将SCNetworkReachabilityFlags 的标记转换为AF自己定义的标记AFNetworkReachabilityStatus 。 </span><br><span class="line">而SCNetworkReachabilityFlags 主要状态如下：</span><br></pre></td></tr></table></figure></p>
+<p>typedef CF_OPTIONS(uint32_t, SCNetworkReachabilityFlags) {<br>    kSCNetworkReachabilityFlagsTransientConnection    = 1&lt;&lt;0, 标明指定的节点或地址是联通的<br>    kSCNetworkReachabilityFlagsReachable        = 1&lt;&lt;1,指明利用现在的网络配置是联通的<br>    kSCNetworkReachabilityFlagsConnectionRequired    = 1&lt;&lt;2,// 指明当前网络通过制定的节点或地址是可以联通的，但是需要先建立连接<br>    kSCNetworkReachabilityFlagsConnectionOnTraffic    = 1&lt;&lt;3,//指明当前连接是可以联通的，但是需要指明路由到指定节点<br>    kSCNetworkReachabilityFlagsInterventionRequired    = 1&lt;&lt;4,// 指明当前连接是可以联通的，但是需要先建立连接，另外，一些形式的用户交互需要来建立连接，比如提供密码，认证token等。    kSCNetworkReachabilityFlagsConnectionOnDemand    = 1&lt;&lt;5,    // 指明当前连接是可以联通的，但是需要先建立连接，连接需要通过CFSocketStream 的 API 来建立连接。<br>    <strong>OSX_AVAILABLE_STARTING(</strong>MAC_10_6,__IPHONE_3_0)<br>    kSCNetworkReachabilityFlagsIsLocalAddress    = 1&lt;&lt;16, 表示当前节点或地址是当前系统的本地接口<br>    kSCNetworkReachabilityFlagsIsDirect        = 1&lt;&lt;17, 表明指定的网络节点或地址不能通过网关，但是能直接到达系统的接口</p>
+<p>#if    TARGET_OS_IPHONE<br>    kSCNetworkReachabilityFlagsIsWWAN        = 1&lt;&lt;18,//表示指定的节点或地址能够通过GRPS，EDGE或其他蜂窝连接。</p>
+<p>#endif    // TARGET_OS_IPHONE</p>
+<pre><code>kSCNetworkReachabilityFlagsConnectionAutomatic    = kSCNetworkReachabilityFlagsConnectionOnTraffic
+</code></pre><p>};</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">来看一下AFNetworkReachabilityStatusForFlags 是如何进行转换的：</span><br></pre></td></tr></table></figure>
+<p>static AFNetworkReachabilityStatus AFNetworkReachabilityStatusForFlags(SCNetworkReachabilityFlags flags) {<br>    BOOL isReachable = ((flags &amp; kSCNetworkReachabilityFlagsReachable) != 0);<br>    BOOL needsConnection = ((flags &amp; kSCNetworkReachabilityFlagsConnectionRequired) != 0);<br>    BOOL canConnectionAutomatically = (((flags &amp; kSCNetworkReachabilityFlagsConnectionOnDemand ) != 0) || ((flags &amp; kSCNetworkReachabilityFlagsConnectionOnTraffic) != 0));<br>    BOOL canConnectWithoutUserInteraction = (canConnectionAutomatically &amp;&amp; (flags &amp; kSCNetworkReachabilityFlagsInterventionRequired) == 0);<br>    BOOL isNetworkReachable = (isReachable &amp;&amp; (!needsConnection || canConnectWithoutUserInteraction));</p>
+<pre><code>AFNetworkReachabilityStatus status = AFNetworkReachabilityStatusUnknown;
+if (isNetworkReachable == NO) {
+    status = AFNetworkReachabilityStatusNotReachable;
+}
+</code></pre><p>#if    TARGET_OS_IPHONE<br>    else if ((flags &amp; kSCNetworkReachabilityFlagsIsWWAN) != 0) {<br>        status = AFNetworkReachabilityStatusReachableViaWWAN;<br>    }</p>
+<p>#endif<br>    else {<br>        status = AFNetworkReachabilityStatusReachableViaWiFi;<br>    }</p>
+<pre><code>return status;
+</code></pre><p>}</p>
+<p><code>`</code><br> AFNetworkReachabilityStatusForFlags 函数利用了<code>SCNetworkReachabilityFlags</code>的各种标记，先通过<code>kSCNetworkReachabilityFlagsReachable</code> 、<code>kSCNetworkReachabilityFlagsConnectionRequired</code> 、<code>kSCNetworkReachabilityFlagsConnectionOnDemand</code>、 <code>kSCNetworkReachabilityFlagsConnectionOnTraffic</code>、<code>kSCNetworkReachabilityFlagsInterventionRequired</code> 来判断出是否连通。如果不连通，则直接赋值为无连接，否则通过<code>kSCNetworkReachabilityFlagsIsWWAN</code>来判断是否是蜂窝连接，如果可以连通且不是蜂窝连接，则认为是<code>Wifi</code>。</p>
+<h4 id="SCNetworkReachabilityScheduleWithRunLoop"><a href="#SCNetworkReachabilityScheduleWithRunLoop" class="headerlink" title="SCNetworkReachabilityScheduleWithRunLoop"></a>SCNetworkReachabilityScheduleWithRunLoop</h4><p>  这个函数主要将networkReachability 设置在 main runloop 中，并且为runloop 的mode 为kCFRunLoopCommonModes 。 设置完这个以后监听就开始运作了。 </p>
+<h4 id="SCNetworkReachabilityGetFlags"><a href="#SCNetworkReachabilityGetFlags" class="headerlink" title="SCNetworkReachabilityGetFlags"></a>SCNetworkReachabilityGetFlags</h4><p>当网络获取到状态的时候立刻执行 AFPostReachabilityStatusChange 来发出通知，执行回调。  </p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/06/25/iOS-存储方案从入门到精通/" rel="next" title="iOS 存储方案从入门到精通">
+                <i class="fa fa-chevron-left"></i> iOS 存储方案从入门到精通
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar1.jpg"
+                alt="liujunlong" />
+            
+              <p class="site-author-name" itemprop="name">liujunlong</p>
+              <p class="site-description motion-element" itemprop="description">记录点点滴滴的感悟, iOS ,技术 刘俊龙， liujunlong ,龙猫，longmao, baidu</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">5</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">2</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#AFNetworking-AFNetworkReachabilityManager-网路状态监控"><span class="nav-number">1.</span> <span class="nav-text">AFNetworking - AFNetworkReachabilityManager  网路状态监控</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#网络状态监控原理"><span class="nav-number">1.1.</span> <span class="nav-text">网络状态监控原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#网络状态监控实现"><span class="nav-number">1.2.</span> <span class="nav-text">网络状态监控实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#AFNetworkReachabilityManager-的初始化"><span class="nav-number">1.2.1.</span> <span class="nav-text">AFNetworkReachabilityManager 的初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#调用-startMonitoring-方法开始对网络状态进行监控"><span class="nav-number">1.2.2.</span> <span class="nav-text">调用 startMonitoring 方法开始对网络状态进行监控</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#SCNetworkReachabilityContext-上下文"><span class="nav-number">1.2.2.1.</span> <span class="nav-text">SCNetworkReachabilityContext 上下文</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SCNetworkReachabilitySetCallback"><span class="nav-number">1.2.2.2.</span> <span class="nav-text">SCNetworkReachabilitySetCallback</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SCNetworkReachabilityScheduleWithRunLoop"><span class="nav-number">1.2.2.3.</span> <span class="nav-text">SCNetworkReachabilityScheduleWithRunLoop</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SCNetworkReachabilityGetFlags"><span class="nav-number">1.2.2.4.</span> <span class="nav-text">SCNetworkReachabilityGetFlags</span></a></li></ol></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">liujunlong</span>
+
+  
+
+  
+</div>
+
+
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Muse</a> v6.3.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.3.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.3.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.3.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.3.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.3.0"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
