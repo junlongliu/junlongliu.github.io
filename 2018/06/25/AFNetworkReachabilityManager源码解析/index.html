@@ -117,7 +117,7 @@
 <meta property="og:locale" content="default">
 <meta property="og:image" content="http://imageliujunlong.test.upcdn.net/2018/07/02/连接.jpg">
 <meta property="og:image" content="http://imageliujunlong.test.upcdn.net/2018/07/02/Socket连接.png">
-<meta property="og:updated_time" content="2018-07-03T03:46:08.000Z">
+<meta property="og:updated_time" content="2018-07-03T06:22:24.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="AFNetworkReachabilityManager源码解析及网络监控相关分析">
 <meta name="twitter:description" content="AFNetworking - AFNetworkReachabilityManager  网路状态监控在很多业务场景下，需要判断网络的状态。 苹果本身给我们提供了系统API : SCNetworkReachabilityRef。但是使用起来比较繁琐，有开源的项目对它进行了封装。 比如AFNetworkReachabilityManager 、 Reachability等。 但是他们的原理都是相似">
@@ -354,7 +354,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2018-07-03 11:46:08" itemprop="dateModified" datetime="2018-07-03T11:46:08+08:00">2018-07-03</time>
+                <time title="Modified: 2018-07-03 14:22:24" itemprop="dateModified" datetime="2018-07-03T14:22:24+08:00">2018-07-03</time>
               
             
           </span>
@@ -421,7 +421,11 @@
 <ul>
 <li>给定socket描述符来创建<br>这时sockaddr 是给定的，则可以通过下面的方法来创建SCNetworkReachabilityRef </li>
 </ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">SCNetworkReachabilityRef reachability = </span><br><span class="line">SCNetworkReachabilityCreateWithAddress(kCFAllocatorDefault, (const struct sockaddr *)address);</span><br><span class="line">``` </span><br><span class="line"></span><br><span class="line">* 给定域名来进行创建 </span><br><span class="line">给定domain，也就是域名字符串。来创建SCNetworkReachabilityRef。 </span><br><span class="line"></span><br><span class="line">``` </span><br><span class="line"> SCNetworkReachabilityRef reachability = </span><br><span class="line"> SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, [domain UTF8String]);</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SCNetworkReachabilityRef reachability = </span><br><span class="line">SCNetworkReachabilityCreateWithAddress(kCFAllocatorDefault, (const struct sockaddr *)address);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>给定域名来进行创建<br>给定domain，也就是域名字符串。来创建SCNetworkReachabilityRef。 </li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SCNetworkReachabilityRef reachability = </span><br><span class="line">SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, [domain UTF8String]);</span><br></pre></td></tr></table></figure>
 <ul>
 <li>没有给定socket描述符，则创建默认的 sockaddr_in6</li>
 </ul>
