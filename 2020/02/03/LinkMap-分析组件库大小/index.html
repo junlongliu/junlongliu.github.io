@@ -116,7 +116,7 @@
 <meta property="og:description" content="Linkmap 文件LinkMap 文件 是编译过程中生成的一个文本文件，文件内容展示了整个可执行文件的全包。 Linkmap 列出了编译后的每一个 .o 目标文件的信息 以及 每个目标文件的代码段、数据段存储详情，可以帮助我们分析可执行文件的构成和各个目标文件的大小。  生成 LinkMap首先，我们要生成LinkMap，这是Xcode提供的功能，默认是不生成的，需要更改以下配置。  Xcode">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://yoursite.com/2020/02/03/LinkMap-分析组件库大小/media/15807401019148/15807414010731.jpg">
-<meta property="og:updated_time" content="2020-02-03T15:22:40.598Z">
+<meta property="og:updated_time" content="2020-02-03T15:24:53.233Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="LinkMap 分析组件库大小">
 <meta name="twitter:description" content="Linkmap 文件LinkMap 文件 是编译过程中生成的一个文本文件，文件内容展示了整个可执行文件的全包。 Linkmap 列出了编译后的每一个 .o 目标文件的信息 以及 每个目标文件的代码段、数据段存储详情，可以帮助我们分析可执行文件的构成和各个目标文件的大小。  生成 LinkMap首先，我们要生成LinkMap，这是Xcode提供的功能，默认是不生成的，需要更改以下配置。  Xcode">
@@ -336,7 +336,7 @@
                 
               
 
-              <time title="Created: 2020-02-03 23:21:39 / Modified: 23:22:40" itemprop="dateCreated datePublished" datetime="2020-02-03T23:21:39+08:00">2020-02-03</time>
+              <time title="Created: 2020-02-03 23:21:39 / Modified: 23:24:53" itemprop="dateCreated datePublished" datetime="2020-02-03T23:21:39+08:00">2020-02-03</time>
             
 
             
@@ -424,7 +424,7 @@
 <p>Dead Stripped Symbols是没用的符号，这部分不应该太大，对于我们做优化价值不大。</p>
 <h2 id="自动分析Link-Map"><a href="#自动分析Link-Map" class="headerlink" title="自动分析Link Map"></a>自动分析Link Map</h2><p>根据之前计算.o文件的方法，就可以写成一个计算大小的脚本了。</p>
 <p>主要思路是通过 Files 能知道文件路径和文件名。<br>通过 Symbols 可以获取到一个文件所有的符号的大小，<br>进而可以统计出所有的组件所占用的文件的大小了。 </p>
-<p><a href="https://www.jianshu.com/p/b43cffb7bcd2" target="_blank" rel="noopener">https://www.jianshu.com/p/b43cffb7bcd2</a></p>
+<p><a href="https://github.com/zgzczzw/LinkMapParser" target="_blank" rel="noopener">https://github.com/zgzczzw/LinkMapParser</a><br><a href="https://www.jianshu.com/p/b43cffb7bcd2" target="_blank" rel="noopener">https://www.jianshu.com/p/b43cffb7bcd2</a></p>
 
       
     </div>
