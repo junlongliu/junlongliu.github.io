@@ -115,12 +115,12 @@
 <meta property="og:site_name" content="junlong的博客">
 <meta property="og:description" content="Linkmap 文件LinkMap 文件 是编译过程中生成的一个文本文件，文件内容展示了整个可执行文件的全包。 Linkmap 列出了编译后的每一个 .o 目标文件的信息 以及 每个目标文件的代码段、数据段存储详情，可以帮助我们分析可执行文件的构成和各个目标文件的大小。  生成 LinkMap首先，我们要生成LinkMap，这是Xcode提供的功能，默认是不生成的，需要更改以下配置。  Xcode">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://yoursite.com/2020/02/03/LinkMap-分析组件库大小/media/15807401019148/15807414010731.jpg">
-<meta property="og:updated_time" content="2020-02-03T15:25:10.256Z">
+<meta property="og:image" content="http://imageliujunlong.test.upcdn.net/2020/02/04/15807414010731.jpg">
+<meta property="og:updated_time" content="2020-02-04T02:06:34.899Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="LinkMap 分析组件库大小">
 <meta name="twitter:description" content="Linkmap 文件LinkMap 文件 是编译过程中生成的一个文本文件，文件内容展示了整个可执行文件的全包。 Linkmap 列出了编译后的每一个 .o 目标文件的信息 以及 每个目标文件的代码段、数据段存储详情，可以帮助我们分析可执行文件的构成和各个目标文件的大小。  生成 LinkMap首先，我们要生成LinkMap，这是Xcode提供的功能，默认是不生成的，需要更改以下配置。  Xcode">
-<meta name="twitter:image" content="http://yoursite.com/2020/02/03/LinkMap-分析组件库大小/media/15807401019148/15807414010731.jpg">
+<meta name="twitter:image" content="http://imageliujunlong.test.upcdn.net/2020/02/04/15807414010731.jpg">
 
 
 
@@ -336,12 +336,24 @@
                 
               
 
-              <time title="Created: 2020-02-03 23:21:39 / Modified: 23:25:10" itemprop="dateCreated datePublished" datetime="2020-02-03T23:21:39+08:00">2020-02-03</time>
+              <time title="Created: 2020-02-03 23:21:39" itemprop="dateCreated datePublished" datetime="2020-02-03T23:21:39+08:00">2020-02-03</time>
             
 
             
               
 
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2020-02-04 10:06:34" itemprop="dateModified" datetime="2020-02-04T10:06:34+08:00">2020-02-04</time>
               
             
           </span>
@@ -411,7 +423,7 @@
 <li>Sections</li>
 </ul>
 <p>Sections字段，描述各个段在最后编译成的可执行文件中的偏移位置（Address）及大小（Size），包括了代码段（<strong>TEXT，保存程序代码段编译后的机器码）和数据段（</strong>DATA，保存变量值），<strong>TEXT和</strong>DATA又分为以下section。</p>
-<p><img src="media/15807401019148/15807414010731.jpg" alt=""></p>
+<p><img src="http://imageliujunlong.test.upcdn.net/2020/02/04/15807414010731.jpg" alt=""></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"># Address	Size    	Segment	Section</span><br><span class="line">0x100001050	0x0006F9F9	__TEXT	__text</span><br><span class="line">0x100070A4A	0x00000474	__TEXT	__stubs</span><br><span class="line">0x100070EC0	0x0000077C	__TEXT	__stub_helper</span><br><span class="line">0x100071640	0x00000370	__TEXT	__const</span><br><span class="line">0x1000719B0	0x00009B2D	__TEXT	__objc_methname</span><br><span class="line">0x10007B4DD	0x0000078F	__TEXT	__objc_classname</span><br><span class="line">0x10007BC6C	0x000037AE	__TEXT	__objc_methtype</span><br><span class="line">0x10007F41A	0x00003D32	__TEXT	__cstring</span><br><span class="line">0x10008314C	0x00000176	__TEXT	__ustring</span><br><span class="line">0x1000832C4	0x00000800	__TEXT	__gcc_except_tab</span><br><span class="line">0x100083AC4	0x0000018C	__TEXT	__entitlements</span><br><span class="line">0x100083C50	0x000003AC	__TEXT	__unwind_info</span><br><span class="line">0x100084000	0x00000008	__DATA	__nl_symbol_ptr</span><br><span class="line">0x100084008	0x000001D0	__DATA	__got</span><br><span class="line">0x1000841D8	0x000005F0	__DATA	__la_symbol_ptr</span><br><span class="line">0x1000847C8	0x000010A0	__DATA	__const</span><br><span class="line">0x100085868	0x00001180	__DATA	__cfstring</span><br></pre></td></tr></table></figure>
 <ul>
 <li>Symbols</li>
